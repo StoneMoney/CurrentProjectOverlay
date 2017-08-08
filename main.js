@@ -11,7 +11,7 @@ var loadModule = path.join(__dirname, '/loadproject.html')
 var newModule = path.join(__dirname, '/newproject.html')
 var overlay = path.join(__dirname, '/overlay.html')
 var projectTemplate = path.join(__dirname, '/project-template.json')
-var globalConfig = path.join(__dirname, '/global-config.json')
+var globalConfig = path.join(__dirname, '/global-config-default.json')
 const baseFolder = process.env.APPDATA+'\\CurrentProjectOverlay';
 const projectFolder = process.env.APPDATA+'\\CurrentProjectOverlay\\projects';
 if (!fs.existsSync(baseFolder)){
