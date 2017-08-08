@@ -105,7 +105,7 @@ websocket.onmessage = function(ev) {
 							document.getElementById(idForK).classList.add("hidden");
 						}
 					} else if (k.indexOf('font') == 0) {
-						//document.getElementById(k).innerHTML = updateTable['global-config'][i][k]
+						document.getElementById("body").style.color = updateTable['global-config'][i][k]
 					} else if (k.indexOf('background') == 0) {
 						var property = k.replace("background","");
 						if(property == "Transparency") {
