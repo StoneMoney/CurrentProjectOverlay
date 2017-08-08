@@ -1,0 +1,131 @@
+<html>
+<head>
+<style>
+#title {
+	position: absolute;
+	width: 73vw;
+	top: 1vh;
+	left:1vw;
+	font-size:27.5vh;
+	font-weight:600;
+}
+#timer {
+	position: absolute;
+	width: 7.5vw;
+	top: 1vh;
+	right:32vw;
+	font-size:27.5vh;
+	font-weight:600;
+}
+#description {
+	position: absolute;
+	width: 74vw;
+	top: 33vh;
+	left:1vw;
+	font-size: 12vh;
+	font-style: italic;
+}
+#image {
+	position: absolute;
+	height: 100vh;
+	top: 0vh;
+	right: 0vw;
+}
+#recipient {
+	position: absolute;
+	bottom: 0vh;
+	left:0vw;
+	font-size:15vh;
+}
+.hidden {
+	visibility:hidden;
+}
+</style>
+</head>
+<body style="font-family:sans-serif;" id="body">
+<div id="title">NO PROJECT</div>
+<div id="timer">00:00:00</div>
+<div id="description">YOU HAVE NO PROJECT ASSOCIATED WITH THE OVERLAY, OR A CONNECTION ISSUE HAS OCCURED</div>
+<div id="recipient">RECIPIENT:</div>
+<img id="image" src="sampleimage.png">
+<script>
+var pattern1 = "^loadprojectoverlay (.*)";
+var re1 = new RegExp(pattern1,"i");
+var pattern2 = "^loadglobalconfigoverlay (.*)";
+var re2 = new RegExp(pattern2,"i");
+websocket = new WebSocket("ws://localhost:8082/");
+websocket.onopen = function() {
+	websocket.send("overlay-requesting");
+}
+websocket.onclose = function() {
+}
+websocket.onmessage = function(ev) {
+	if(re1.test(ev.data)) {
+		var message = ev.data;
+		var matches = message.match(pattern1);
+		var updateTable = JSON.parse(matches[1]);
+		console.log(updateTable);
+		for (var i in updateTable['project-id']) {
+			Object.keys(updateTable['project-id'][i]).forEach(function(k) {
+				if(k == "image") {
+					document.getElementById(k).src = updateTable['project-id'][i][k]
+				} else if (k == "recipient") {
+					document.getElementById(k).innerHTML = "RECIPIENT: "+updateTable['project-id'][i][k]
+				} else {
+					document.getElementById(k).innerHTML = updateTable['project-id'][i][k]
+				}
+			});
+		}
+		for (var i in updateTable['project-config']) {
+			Object.keys(updateTable['project-config'][i]).forEach(function(k) {
+				if(k.indexOf('show') == 0) {
+					var removeShow = k.replace("show","")
+					var idForK = removeShow.toLowerCase();
+					if(updateTable['project-config'][i][k] == "false") {
+						console.log(idForK);
+						document.getElementById(idForK).classList.add("hidden");	
+					}
+				}
+			});
+		}
+	}
+	if(re2.test(ev.data)) {
+		var message = ev.data;
+		var matches = message.match(pattern2);
+		var updateTable = JSON.parse(matches[1]);
+		projectJSON = updateTable;
+		setTimeout(function() {
+			for (var i in updateTable['global-config']) {
+				Object.keys(updateTable['global-config'][i]).forEach(function(k) {
+					if(k.indexOf('show') == 0) {
+						var removeShow = k.replace("show","")
+						var idForK = removeShow.toLowerCase();
+						if(updateTable['global-config'][i][k] == "true") {
+						} else {
+							document.getElementById(idForK).classList.add("hidden");
+						}
+					} else if (k.indexOf('font') == 0) {
+						//document.getElementById(k).innerHTML = updateTable['global-config'][i][k]
+					} else if (k.indexOf('background') == 0) {
+						var property = k.replace("background","");
+						if(property == "Transparency") {
+							if(updateTable['global-config'][i][k] == "true") {
+								document.getElementById("body").style.opacity = 0.5;
+							}
+						} else {
+							document.getElementById("body").style.backgroundColor = updateTable['global-config'][i][k];
+						}
+					} else {
+						console.log("err: "+k)
+					}
+				});
+			}
+		},100);
+	}
+	if(ev.data == "reload") {
+		location.reload();
+	}
+}
+</script>
+</body>
+</html>

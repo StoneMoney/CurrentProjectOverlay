@@ -1,0 +1,209 @@
+<html>
+<head>
+<title>CurrentProjectTracker v1</title>
+<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600" rel="stylesheet">
+<style>
+.footer {
+	text-align:right;
+	position:fixed;
+	right:0;
+	bottom:0;
+}
+*:disabled {
+cursor: not-allowed;
+}
+a:active {
+color:#ccc;
+}
+a:hover {
+color:#ccc;
+}
+a:visited {
+color:#aaa;
+}
+a:link {
+color:#ccc;
+}
+.opensans, h1, p, b, button {
+	font-family:'Open Sans',sans-serif;
+}
+input,option,h5,p {
+	font-family: monospace;
+}
+button {
+	width:100%;
+}
+.auto-button {
+	width:auto !important;
+}
+.record {
+	font-size:36px;
+	font-family:sans-serif;
+}
+.hidden {
+	visibility:hidden;
+}
+.logo {
+	width:400px !important;
+}
+.showCustom {
+	width: 35vmin;
+	background-color: #cb75f9;
+	border-width: 1px;
+	border-radius: 5px;
+	border-style:solid;
+	border-color:rgba(0,0,0,.6);
+}
+#status {
+	background-color:red;
+	width:150px;
+	font-family: monospace;
+	font-size:16px;
+	text-align:center;
+}
+.wrapper {
+	width: 450px; 
+	background-color: rgba(0,0,0,.2);
+	border-width: 8px;
+	border-radius: 5px;
+	border-style:solid;
+	border-color:rgba(0,0,0,.6);
+	text-align:center;
+	align:center;
+}
+.inline {
+	display:inline-block;
+}
+#spin {
+	width:250px;
+	font-weight:900;
+	background: linear-gradient(to right, #E8313C, #F7934A, #FCEE4E, #8CC63F, #15D6FF, #B654FF);
+	border-width: 1px;
+	border-radius: 2px;
+	border-style:solid;
+	border-color:rgba(0,0,0,.6);
+}
+#load {
+	color:black;
+	background: linear-gradient(to bottom right, #fcad23, #fabb34);
+	border-width: 1px;
+	border-radius: 2px;
+	border-style:solid;
+	border-color:rgba(0,0,0,.6);
+}
+#new {
+	color:black;
+	background: linear-gradient(to bottom right, #ba4edb, #78069b);
+	border-width: 1px;
+	border-radius: 2px;
+	border-style:solid;
+	border-color:rgba(0,0,0,.6);
+}
+#updateProject {
+	color:black;
+	background: linear-gradient(to bottom right, #23db23, #179b35);
+	border-width: 1px;
+	border-radius: 2px;
+	border-style:solid;
+	border-color:rgba(0,0,0,.6);
+}
+#remove {
+	color:black;
+	background: linear-gradient(to bottom right, #ef1f33, #9b1421);
+	border-width: 1px;
+	border-radius: 2px;
+	border-style:solid;
+	border-color:rgba(0,0,0,.6);
+}
+</style>
+</head>
+<body align="">
+<p id="error" style="color:red"></p>
+<div id="wrapper">
+<p width="300px">check the boxes to the right if you wish for this information to not be visible<p>
+<input  disabled id="project-filename" class="inline" size="30" placeholder="Unique File Name"></input><br>
+<input  id="project-title" class="inline" size="28" placeholder="Title"></input><input type="checkbox"  id="project-showTitle" placeholder="Show Title"></input><br>
+<input  id="project-description" class="inline" size="28" placeholder="Description"></input><input type="checkbox"  id="project-showDescription" placeholder="Show Description"></input><br>
+<input  id="project-recipient" class="inline" size="28" placeholder="Recipient"></input><input type="checkbox"  id="project-showRecipient" placeholder="Show Recipient"></input><br>
+<input  id="project-image" class="inline" size="28" placeholder="Image"></input><input type="checkbox"  id="project-showImage" placeholder="Show Image"></input><br>
+<input  id="project-timer" class="inline" size="28" placeholder="Timer" value="00:00:00"></input><input type="checkbox"  id="project-showTimer" placeholder="Show Timer"></input><br>
+<button  id="updateProject" class="auto-button inline" onclick="saveProjectAndLoad()">UPDATE</button>&nbsp;<button  id="remove" class="auto-button inline" onclick="removeProject()">DELETE</button>
+</div>
+<script>
+var projectJSON = '{"filename":"","project-config":[{"showTimer":""},{"showDescription":""},{"showRecipient":""},{"showTitle": ""},{"showImage": ""}],"project-id": [{"title":""},{"description":""},{"recipient":""},{"image":""},{"timer":""}]}'
+websocket = new WebSocket("ws://localhost:8082/");
+var pattern1 = "^loadprojectmodule (.*)";
+var re1 = new RegExp(pattern1,'i');
+websocket.onopen = function() {
+	websocket.send("module-requesting")
+}
+websocket.onclose = function() {	
+}
+websocket.onmessage = function(ev) {
+	if(re1.test(ev.data)) {
+		var message = ev.data;
+		var matches = message.match(pattern1);
+		var updateTable = JSON.parse(matches[1]);
+		document.getElementById('project-filename').value = updateTable['filename'];
+		for (var i in updateTable['project-id']) {
+			Object.keys(updateTable['project-id'][i]).forEach(function(k) {
+				console.log(k);
+				document.getElementById('project-'+k).value = updateTable['project-id'][i][k]
+			});
+		}
+		for (var i in updateTable['project-config']) {
+			Object.keys(updateTable['project-config'][i]).forEach(function(k) {
+				if(k.indexOf('show') == 0) {
+					var idForK = "project-"+k
+					console.log(idForK);
+					if(updateTable['project-config'][i][k] == "true") {
+						document.getElementById(idForK).checked = false;	
+					} else {
+						document.getElementById(idForK).checked = true;
+					}
+				}
+			});
+		}
+		if(updateTable['filename'] == "*") {
+			document.getElementById("error").innerHTML = "Error: There currently isn't a project selected, select an existing project or create a new one";
+			document.getElementById("wrapper").classList.add("hidden");
+			setTimeout(function() {
+				document.getElementById("error").innerHTML = "";
+			},15000);
+		}
+	}
+}
+function saveProjectAndLoad() {
+	var sendJSON = JSON.parse(projectJSON);
+	var filename = document.getElementById("project-filename").value;
+	sendJSON['filename'] = filename;
+	for (var i in sendJSON['project-id']) {
+		Object.keys(sendJSON['project-id'][i]).forEach(function(k) {
+			console.log('project-'+k);
+			sendJSON['project-id'][i][k] = document.getElementById('project-'+k).value
+		});
+	}
+	for (var i in sendJSON['project-config']) {
+		Object.keys(sendJSON['project-config'][i]).forEach(function(k) {
+			console.log(k);
+			if(document.getElementById('project-'+k).checked) {
+				sendJSON['project-config'][i][k] = "false"
+			} else { 
+				sendJSON['project-config'][i][k] = "true"
+			}
+		
+		});
+	}
+	setTimeout(function() {
+		console.log(sendJSON)
+		websocket.send("saveprojectandload "+JSON.stringify(sendJSON));
+		websocket.send("reload");
+	},1000);
+}
+function removeProject() {
+var filename = document.getElementById("project-filename").value;
+websocket.send("deleteproject "+ filename);
+}
+</script>
+</body>
+</html>

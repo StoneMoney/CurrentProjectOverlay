@@ -1,0 +1,15 @@
+{	
+	"filename":"*",
+"project-config":[
+	{"showTimer":"true"},
+	{"showDescription":"true"},
+	{"showRecipient":"true"},
+	{"showTitle": "true"},
+	{"showImage": "true"}],
+"project-id": [
+	{"title":""},
+	{"description":""},
+	{"recipient":""},
+	{"image":""},
+	{"timer":""}]
+}

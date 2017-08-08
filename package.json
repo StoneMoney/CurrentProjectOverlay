@@ -1,0 +1,17 @@
+{
+  "name": "currentprojectoverlay",
+  "version": "1.0.0",
+  "description": "Show your stream your current project time and infos",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ngiano",
+  "license": "MIT",
+  "dependencies": {
+    "fs-extra": "^4.0.1",
+    "glob": "^7.1.2",
+    "opn": "^5.1.0",
+    "ws": "^3.1.0"
+  }
+}

@@ -1,0 +1,368 @@
+<html>
+<head>
+<title>CurrentProjectTracker v1</title>
+<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600" rel="stylesheet">
+<style>
+.footer {
+	text-align:right;
+	position:fixed;
+	right:0;
+	bottom:0;
+}
+*:disabled {
+cursor: not-allowed;
+}
+a:active {
+color:#ccc;
+}
+a:hover {
+color:#ccc;
+}
+a:visited {
+color:#aaa;
+}
+a:link {
+color:#ccc;
+}
+.opensans, h1, p, b, button {
+	font-family:'Open Sans',sans-serif;
+}
+input,option,h5,p {
+	font-family: monospace;
+}
+button {
+	width:100%;
+}
+.auto-button {
+	width:auto !important;
+}
+.record {
+	font-size:36px;
+	font-family:sans-serif;
+}
+.hidden {
+	visibility:hidden;
+}
+.logo {
+	width:400px !important;
+}
+.showCustom {
+	width: 35vmin;
+	background-color: #cb75f9;
+	border-width: 1px;
+	border-radius: 5px;
+	border-style:solid;
+	border-color:rgba(0,0,0,.6);
+}
+#status {
+	background-color:red;
+	width:150px;
+	font-family: monospace;
+	font-size:16px;
+	text-align:center;
+}
+.wrapper {
+	width: 450px; 
+	background-color: rgba(0,0,0,.2);
+	border-width: 8px;
+	border-radius: 5px;
+	border-style:solid;
+	border-color:rgba(0,0,0,.6);
+	text-align:center;
+	align:center;
+}
+.inline {
+	display:inline-block;
+}
+#spin {
+	width:250px;
+	font-weight:900;
+	background: linear-gradient(to right, #E8313C, #F7934A, #FCEE4E, #8CC63F, #15D6FF, #B654FF);
+	border-width: 1px;
+	border-radius: 2px;
+	border-style:solid;
+	border-color:rgba(0,0,0,.6);
+}
+#load {
+	color:black;
+	background: linear-gradient(to bottom right, #fcad23, #fabb34);
+	border-width: 1px;
+	border-radius: 2px;
+	border-style:solid;
+	border-color:rgba(0,0,0,.6);
+}
+#new {
+	color:black;
+	background: linear-gradient(to bottom right, #ba4edb, #78069b);
+	border-width: 1px;
+	border-radius: 2px;
+	border-style:solid;
+	border-color:rgba(0,0,0,.6);
+}
+#createNewProject {
+	color:black;
+	background: linear-gradient(to bottom right, #23db23, #179b35);
+	border-width: 1px;
+	border-radius: 2px;
+	border-style:solid;
+	border-color:rgba(0,0,0,.6);
+}
+#remove {
+	color:black;
+	background: linear-gradient(to bottom right, #ef1f33, #9b1421);
+	border-width: 1px;
+	border-radius: 2px;
+	border-style:solid;
+	border-color:rgba(0,0,0,.6);
+}
+</style>
+</head>
+<body align="">
+<div class="wrapper">
+<h1 id="message">CurrentProjectTracker</h1>
+<!--<object src="logo.svg" class="logo">
+	<img class="logo" src="http://stonemoney.github.io/mojowheelassets/logo.svg">
+</object>-->
+<div id="status" class="inline">DISCONNECTED</div><button id="reconnect" class="inline" onclick="reconnectToServer()">RECONNECT</button>
+<p id="error" style="color:red"></p>
+<select id="existingProjectList" size="1" style="width:200px" placeholder="existing project"></select><button disabled id="load" class="auto-button inline" onclick="loadProject()">LOAD EXISTING</button><button disabled id="new" class="auto-button inline" onclick="newProject()">NEW</button><br><br>
+<iframe id="iframe">
+	iframe disabled
+</iframe>
+<h4 id="lastSpun" class="opensans">this text will show what is currently projecting</h4>
+</div>
+<p>Location of overlay file: <b id="location">?</b><br>
+<button  id="import" class="auto-button inline" onclick="exportStrings()">open projects folder</button>
+</p>
+<button onclick="showCustomization()" class="auto-button showCustom" id="showCustom">GLOBAL OPTIONS</button>
+<div id="customizationWrapper" class="hidden">
+<button onclick="hideCustomization()" class="showCustom">HIDE GLOBAL OPTIONS</button>
+<p>Customization settings. See <a href="https://github.com/StoneMoney/CurrentProjectTracker/wiki">wiki</a> for more in-depth descriptions.</p>
+<p>Visibility options only take priority when your marking it as not visible, otherwise it follows per-project-configs</p>
+<table>
+	<tr>
+		<td align="right"><input type="checkbox" disabled id="showTimer" placeholder="Show Timer"></input></td>
+		<td>Check to make timer visible</td>
+	</tr>
+	<tr>
+		<td align="right"><input type="checkbox" disabled id="showDescription" placeholder="Show Description"></input></td>
+		<td>Check to make description visible</td>
+	</tr>
+	<tr>
+		<td align="right"><input type="checkbox" disabled id="showTitle" placeholder="Show Title"></input></td>
+		<td>Check to make title visible</td>
+	</tr>
+	<tr>
+		<td align="right"><input type="checkbox" disabled id="showImage" placeholder="Show Image"></input></td>
+		<td>Check to make image visible</td>
+	</tr>
+	<tr>
+		<td align="right"><input type="checkbox" disabled id="showRecipient" placeholder="Show Recipient"></input></td>
+		<td>Check to make recipient visible</td>
+	</tr>
+	<tr>
+		<td><input disabled id="fontColor" placeholder="Color"></input></td>
+		<td>Color of text</td>
+	</tr>
+	<tr>
+		<td><input disabled id="fontFamily" placeholder="Font Family"></input></td>
+		<td>Font</td>
+	</tr>
+	<tr>
+		<td><input disabled id="backgroundColor" placeholder="Color"></input></td>
+		<td>Color of background, type none for transparent</td>
+	</tr>
+	<tr>
+		<td align="right"><input type="checkbox" disabled id="backgroundTransparency" placeholder="Transparent Background"></input></td>
+		<td>Check to make background semi transparent, applicable when background has a color</td>
+	</tr>
+</table>
+<table>
+	<tr>
+		<td><button disabled id="loadConfig" onclick="loadConfig()" height="400px">Load current options</button></td>
+		<td><button disabled id="saveConfig" onclick="saveConfig()" height="400px">Save current options</button></td>
+		<td><button disabled id="defaultConfig" onclick="defaultConfig()" height="400px">Restore to default</button></td>
+	</tr>
+</table>
+</div><br>
+<div class="footer">
+	<h5><a href="https://github.com/StoneMoney/CurrentProjectTracker/wiki">help and new releases</a><br>[@ngiano | CurrentProjectTracker 1 | 7-08-2017]</h5>
+</div>
+<script>
+	var projectJSON = '{"filename":"","project-config":[{"showTimer":""},{"showDescription":""},{"showRecipient":""},{"showTitle": ""},{"showImage": ""}],"project-id": [{"title":""},{"description":""},{"recipient":""},{"image":""},{"timer":""}]}'
+	var globalJSON = '{"global-config":[{"showTimer":"true"},{"showDescription":"true"},{"showTitle": "false"},{"showImage": "true"},{"showRecipient": "true"},{"fontColor": "black"},{"fontFamily": "sans-serif"},{"backgroundColor": "none"},{"backgroundTransparency": "true"}]}';
+	var wheelPreview = document.getElementById("contents");
+	var pattern2 = "^loadglobalconfigdash (.*)";
+	var re2 = new RegExp(pattern2,'i');
+	var pattern3 = "^location (.*)";
+	var re3 = new RegExp(pattern3,'i');
+	var pattern4 = "^existingproject ([A-Z]+|[a-z]+)";
+	var re4 = new RegExp(pattern4,'i');
+	//create a new WebSocket object.
+	websocket = new WebSocket("ws://localhost:8082/");
+	function reconnectToServer() {
+		location.reload();
+	}
+	function showCustomization() {
+		document.getElementById("customizationWrapper").classList.remove("hidden");
+		document.getElementById("showCustom").classList.add("hidden");
+	}
+	function hideCustomization() {
+		document.getElementById("customizationWrapper").classList.add("hidden");
+		document.getElementById("showCustom").classList.remove("hidden");
+	}
+	websocket.onopen = function() {
+		var existingProjectElement = document.createElement("option");
+		existingProjectElement.id = "existingproject-current-project";
+		existingProjectElement.value = "current-project";
+		existingProjectElement.innerHTML = "* CURRENT PROJECT *";
+		existingProjectList.add(existingProjectElement);
+		document.getElementById("status").style.backgroundColor = "#179b35";
+		document.getElementById("status").innerHTML = "CONNECTED";
+		websocket.send("dash-requesting");
+		websocket.send("dash-need-projects");
+		document.getElementById("new").disabled = false;
+		document.getElementById("load").disabled = false;
+		document.getElementById("reconnect").classList.add("hidden");
+		document.getElementById("showTimer").disabled = false;
+		document.getElementById("showDescription").disabled = false;
+		document.getElementById("showTitle").disabled = false;
+		document.getElementById("showImage").disabled = false;
+		document.getElementById("showRecipient").disabled = false;
+		document.getElementById("fontColor").disabled = false;
+		document.getElementById("fontFamily").disabled = false;
+		document.getElementById("backgroundColor").disabled = false;
+		document.getElementById("backgroundTransparency").disabled = false;
+		document.getElementById("loadConfig").disabled = false;
+		document.getElementById("saveConfig").disabled = false;
+		document.getElementById("defaultConfig").disabled = false;
+
+	};
+	websocket.onmessage = function(ev) {
+		if(re2.test(ev.data)) {
+			var message = ev.data;
+			var matches = message.match(pattern2);
+			var updateTable = JSON.parse(matches[1]);
+			globalJSON = updateTable;
+			for (var i in updateTable['global-config']) {
+				Object.keys(updateTable['global-config'][i]).forEach(function(k) {
+					if(k.indexOf('show') == 0) {
+						if (updateTable['global-config'][i][k] == 'true') {
+							document.getElementById(k).checked = true
+						} else {
+							document.getElementById(k).checked = false
+						}
+					} else {
+						document.getElementById(k).value = updateTable['global-config'][i][k]
+					}
+				});
+			}
+		}
+		if (re3.test(ev.data)) {
+			var message = ev.data;
+			var matches = message.match(pattern3);
+			document.getElementById("location").innerHTML = matches[1] +"\\overlay.html";
+		}
+		if (re4.test(ev.data)) {
+			var message = ev.data;
+			var matches = message.match(pattern4);
+			var existingProjectElement = document.createElement("option");
+			existingProjectElement.id = "existingproject-"+matches[1];
+			existingProjectElement.innerHTML = matches[1];
+			existingProjectElement.value = matches[1];
+			existingProjectList.add(existingProjectElement);
+		}
+		if (ev.data == "resetmodule") {
+			document.getElementById("iframe").src = "";
+		}
+		if (ev.data == "loadprojectmodule") {
+			setTimeout(function() {
+			document.getElementById("iframe").src = "loadproject.html";
+			},100);
+		}
+	}
+	websocket.onclose = function() {
+		document.getElementById("load").disabled = true;
+		document.getElementById("new").disabled = true;
+		document.getElementById("status").style.backgroundColor = "red";
+		document.getElementById("status").innerHTML = "DISCONNECTED";
+		document.getElementById("reconnect").classList.remove("hidden");
+		document.getElementById("showTimer").disabled = true;
+		document.getElementById("showDescription").disabled = true;
+		document.getElementById("showTitle").disabled = true;
+		document.getElementById("showImage").disabled = true;
+		document.getElementById("showRecipient").disabled = true;
+		document.getElementById("fontColor").disabled = true;
+		document.getElementById("fontFamily").disabled = true;
+		document.getElementById("backgroundColor").disabled = true;
+		document.getElementById("backgroundTransparency").disabled = true;
+		document.getElementById("loadConfig").disabled = true;
+		document.getElementById("saveConfig").disabled = true;
+		document.getElementById("defaultConfig").disabled = true;
+	};
+	function loadProject() {
+		if(document.getElementById("existingProjectList").value != null) {
+			websocket.send("setcurrentproject "+document.getElementById("existingProjectList").value); //send method
+			websocket.send("reload");
+			setTimeout(function() {document.getElementById("iframe").src = "loadproject.html"; },200);
+		} else {
+			document.getElementById("error").innerHTML = "Error: You have no item selected";
+			setTimeout(function() {
+				document.getElementById("error").innerHTML = "";
+			},5000);
+		}
+	}
+	function newProject() {
+		document.getElementById("iframe").src = "newproject.html";
+	}
+	function exportStrings() {
+		websocket.send("opendatafolder");
+	}
+	function defaultConfig() {
+		if(confirm("Restore all customization settings to default?") == true) {
+			websocket.send("restoretodefault");
+			document.getElementById("defaultConfig").disabled = true;
+			setTimeout(function() {
+				document.getElementById("defaultConfig").disabled = false;
+			},25000);
+		}
+	}
+	function saveConfig() {
+		var sendJSON = globalJSON;
+		for (var i in sendJSON['global-config']) {
+			Object.keys(sendJSON['global-config'][i]).forEach(function(k) {
+				if(k.indexOf("show") == 0) {
+					if(document.getElementById(k).checked) {
+						sendJSON['global-config'][i][k] = "true";
+					} else {
+						sendJSON['global-config'][i][k] = "false";
+					}
+				} else if (k == "backgroundTransparency") {
+					if(document.getElementById(k).checked) {
+						sendJSON['global-config'][i][k] = "true";
+					} else {
+						sendJSON['global-config'][i][k] = "false";
+					}
+				} else {
+					sendJSON['global-config'][i][k] = document.getElementById(k).value;
+				}
+			})
+		}
+		document.getElementById("saveConfig").disabled = true;
+		setTimeout(function() {
+			websocket.send("saveglobalconfig "+JSON.stringify(sendJSON));
+		},100)
+		setTimeout(function() {
+			document.getElementById("saveConfig").disabled = false;
+		},25000);
+	}
+	function loadConfig() {
+		websocket.send("dash-requesting-config");
+		document.getElementById("loadConfig").disabled = true;
+		setTimeout(function() {
+			document.getElementById("loadConfig").disabled = false;
+		},25000);
+	}
+</script>
+</body>
+</html>
